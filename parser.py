@@ -15,6 +15,40 @@ class Parser():
     def __init__(self):
         pass
 
+    def __correct(self, equ_string):
+        first_dg = ["-", "+"]
+        second_dg = ["*", "/"]
+        third_dg = ["^"]
+
+        all_operators = first_dg + second_dg + third_dg + ["="]
+
+        # Kein ^, +, *, oder / an erster postition
+        if(equ_string[0] in second_dg+third_dg + ["+"] or
+            equ_string[-1] in all_operators):
+            raise EquationError("Bad equation")
+
+        # Überprüft ob ein '=' vorhanden ist und dass es nicht an erster oder
+        # letzter Stelle steht
+        pos = equ_string.find("=")
+        if pos < 0 or pos == 0 or pos == len(equ_string)-1:
+            raise EquationError("Bad equation")
+
+        # Überprüft ob nicht zwei inkompatible Operatoren aufeinender Folgen,
+        # wie z.B. * und / (+ und -, * und - und / und - funktionieren)
+        for i in range(len(equ_string)):
+            if(equ_string[i] in second_dg+third_dg+["-"] and
+                 equ_string[i+1] in all_operators) or (
+                 equ_string[i] in first_dg+second_dg+["^"] and
+                 equ_string[i+1] == "="):
+                raise EquationError("Bad equation")
+
+        for i in range(len(equ_string)):
+            if(equ_string[i] in second_dg+third_dg+["-"] and
+                 equ_string[i-1] in all_operators) or (
+                 equ_string[i] in first_dg+second_dg+["^"] and
+                 equ_string[i-1] == "="):
+                raise EquationError("Bad equation")
+
     def __cleanUp(self, char_list):
         work_list = []
 
@@ -72,6 +106,7 @@ class Parser():
 
     def parse(self, equation_string):
         """Returns a solvable Equation object"""
+        self.__correct(equation_string)
         equation_list = list(equation_string)
         equation_list = self.__cleanUp(equation_list)
         equation_list = self.__toInteger(equation_string)
